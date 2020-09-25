@@ -3,13 +3,17 @@ package com.example.anteeoneapp
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        id_name.setText(getIntent().getStringExtra("NAME"))
+        id_home.setText(getIntent().getStringExtra("HOME"))
+        id_education.setText(getIntent().getStringExtra("EDUCATION"))
+        id_work.setText(getIntent().getStringExtra("WORK"))
+        id_relationship.setText(getIntent().getStringExtra("RELATIONSHIP"))
         id_editNameButton.setOnClickListener {
 
             if(id_name.visibility == View.VISIBLE){
