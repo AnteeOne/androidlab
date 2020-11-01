@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">AnteeOneApp</string>
+    <string name="home">Home</string>
+    <string name="places">Places</string>
+    <string name="photos">Photos</string>
+    <string name="title">Title</string>
+    <string name="description">Description</string>
+    <string name="cancel">Cancel</string>
 </resources>
