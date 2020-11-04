@@ -32,7 +32,7 @@
         app:layout_constraintTop_toBottomOf="@+id/item_place_title" />
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/item_place_delete"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:layout_marginTop="40dp"

@@ -5,9 +5,15 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
-class PlaceAdapter(private val list:ArrayList<Place>):RecyclerView.Adapter<PlaceHolder>() {
+class PlaceAdapter(private var list:ArrayList<Place>):RecyclerView.Adapter<PlaceHolder>() {
+
+    private var placeList = list
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlaceHolder {
-        return PlaceHolder.create(parent)
+        return PlaceHolder.create(parent) {
+            PlacesRepository.placesList.removeAt(it)
+            notifyDataSetChanged()
+        }
     }
 
 
@@ -34,7 +40,7 @@ class PlaceAdapter(private val list:ArrayList<Place>):RecyclerView.Adapter<Place
         val callback : PlacesListDiffCallback = PlacesListDiffCallback(list,newList)
         val diffResult: DiffUtil.DiffResult = DiffUtil.calculateDiff(callback)
         diffResult.dispatchUpdatesTo(this)
-        this.list.clear()
-        this.list.addAll(newList)
+
     }
+
 }

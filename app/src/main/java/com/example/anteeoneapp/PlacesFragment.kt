@@ -1,15 +1,23 @@
 package com.example.anteeoneapp
 
 import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import kotlinx.android.synthetic.main.fragment_places.*
+import kotlinx.android.synthetic.main.places_dialog.*
+import kotlinx.android.synthetic.main.places_dialog.view.*
 
 class PlacesFragment: Fragment(){
+
+    var adapter : PlaceAdapter? = null
+    var dialogBuilder: AlertDialog.Builder? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -19,42 +27,38 @@ class PlacesFragment: Fragment(){
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        adapter = PlaceAdapter(PlacesRepository.placesList)
+        val dialogLayout = LayoutInflater.from(context).inflate(R.layout.places_dialog,null)
+
+
+        dialogBuilder = AlertDialog.Builder(context)
+            .setTitle("Add place")
+            .setView(dialogLayout)
+            .setCancelable(false)
+            .setPositiveButton(android.R.string.ok) { dialogInterface: DialogInterface, i: Int ->
+
+                    val place = Place(
+                                    PlacesRepository.placesList.size,
+                                    dialogLayout.places_dialog_edit_title.text.toString(),
+                                    dialogLayout.places_dialog_edit_description.text.toString())
+                    PlacesRepository.addPlace(dialogLayout.places_dialog_edit_position.text.toString(),place)
+
+                    updateData()
+
+            }
+        val dialog = dialogBuilder?.create()
         fragment_places_list.addItemDecoration(DividerItemDecoration(context,DividerItemDecoration.VERTICAL))
-        fragment_places_list.adapter = PlaceAdapter(PlacesReposytory.getPlaces())
-        var placeAdapter : PlaceAdapter = PlaceAdapter(PlacesReposytory.placesList)
+        fragment_places_list.adapter = adapter
         fragment_places_add_button.setOnClickListener{
-            val builder: AlertDialog.Builder = AlertDialog.Builder(context)
-            builder.setView(R.layout.places_dialog)
-            placeAdapter.updateData(PlacesReposytory.getPlaces2())
-//            builder.setCancelable(false)
-//                .setPositiveButton("OK",DialogInterface.OnClickListener{
-//                    dialogInterface: DialogInterface, i: Int ->
-//                    fun onClick(dialog: DialogInterface,i:Int){
-//                        var place = Place(places_dialog_edit_position.id,
-//                                          places_dialog_edit_title.text.toString(),
-//                                          places_dialog_edit_description.text.toString())
-//                        fragment_home_textview.text = places_dialog_edit_title.text
-//                        var placeAdapter : PlaceAdapter = PlaceAdapter(PlacesReposytory.placesList)
-//                        placeAdapter.updateData(PlacesReposytory.add(3,Place(3,"23423","23423")))
-//
-//                    }
-//                })
-//                .setNegativeButton("Cancel",DialogInterface.OnClickListener{
-//                    dialogInterface: DialogInterface, i: Int ->
-//                    fun onClick(dialog: DialogInterface,i:Int){
-//                        dialog.cancel()
-//                    }
-//                })
-//            val alertDialog:AlertDialog = builder.create()
-//            alertDialog.show()
-        }
-
-        swipeRefreshLayout.setOnRefreshListener {
-            placeAdapter.notifyDataSetChanged()
-            swipeRefreshLayout.isRefreshing = false
+            dialog?.show()
         }
 
 
+    }
 
+    private fun updateData(){
+        adapter?.updateData(PlacesRepository.placesList)
+        adapter?.notifyDataSetChanged()
     }
 }
