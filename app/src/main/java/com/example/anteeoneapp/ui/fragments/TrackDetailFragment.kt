@@ -33,8 +33,11 @@ class TrackDetailFragment : BaseFragment(R.layout.fragment_track_detail) {
 
         override fun onServiceConnected(className: ComponentName, service: IBinder) {
             musicService = (service as? MusicService.MusicBinder)?.getService()
-            if (musicService==null) Log.println(Log.DEBUG,"mytag","service is null")
-            else Log.println(Log.DEBUG,"mytag","service is not null")
+            Log.println(Log.DEBUG,"mytag","Service on binder = $musicService")
+            if(musicService != null){
+                initView()
+            }
+
         }
 
         override fun onServiceDisconnected(className: ComponentName) {
@@ -43,19 +46,24 @@ class TrackDetailFragment : BaseFragment(R.layout.fragment_track_detail) {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onResume() {
+        super.onResume()
         initService()
+    }
+
+    private fun initService(){
+        val intent = Intent(this.context, MusicService::class.java)
+        activity?.bindService(intent, binderConnection, Context.BIND_AUTO_CREATE)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initFields()
-        initView()
     }
 
     override fun onStart() {
         super.onStart()
+
 
     }
 
@@ -85,9 +93,12 @@ class TrackDetailFragment : BaseFragment(R.layout.fragment_track_detail) {
     }
 
     private fun initMusicNavigationView(id: Int) {
+        Log.println(Log.DEBUG,"mytag","Service = $musicService")
+        musicService?.setTrack(id)
+        musicService?.playTrack()
 
         playButton.setOnClickListener {
-            Log.println(Log.DEBUG,"mytag", musicService!!.currentTrackId.toString());
+            Log.println(Log.DEBUG,"mytag", "current track = ${musicService!!.currentTrackId.toString()}");
             musicService?.playTrack()
             showPauseButton()
         }
@@ -114,6 +125,7 @@ class TrackDetailFragment : BaseFragment(R.layout.fragment_track_detail) {
             coverView.setImageResource(mTrack.cover)
 
             showPauseButton()
+
             playButton.setOnClickListener {
                 musicService?.playTrack()
                 showPauseButton()
@@ -122,10 +134,6 @@ class TrackDetailFragment : BaseFragment(R.layout.fragment_track_detail) {
         }
     }
 
-    private fun initService(){
-        val intent = Intent(this.context, MusicService::class.java)
-        activity?.bindService(intent, binderConnection, Context.BIND_AUTO_CREATE)
-    }
 
     private fun showPauseButton(){
         playButton.visibility = View.GONE

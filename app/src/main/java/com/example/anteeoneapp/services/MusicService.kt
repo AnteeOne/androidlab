@@ -4,15 +4,10 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Binder
-import android.os.Build
 import android.os.IBinder
-import android.util.Log
-import androidx.core.app.NotificationCompat
-import com.example.anteeoneapp.R
 import com.example.anteeoneapp.models.Track
 import com.example.anteeoneapp.notifications.NotificationController
 import com.example.anteeoneapp.repository.TrackRepository
@@ -33,7 +28,9 @@ class MusicService() : Service() {
     inner class MusicBinder : Binder() {
 
         fun getService(): MusicService = this@MusicService
+
     }
+
 
     override fun onBind(intent: Intent): IBinder = musicBinder
 
@@ -46,7 +43,18 @@ class MusicService() : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        mPlayer.start()
+//        mPlayer.start()
+        when(intent?.action){
+            "PREVIOUS" -> {
+                playPreviousTrack()
+            }
+            "RESUME" -> {
+                if (mPlayer.isPlaying) pauseTrack() else playTrack()
+            }
+            "NEXT" -> {
+                playNextTrack()
+            }
+        }
         return super.onStartCommand(intent, flags, startId)
     }
 
@@ -63,34 +71,12 @@ class MusicService() : Service() {
     }
 
     private fun initNotificationBar(){
-        val notificationManager: NotificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channel_name)
-            val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel = notificationManager.getNotificationChannel(CHANNEL_ID) ?:  NotificationChannel(CHANNEL_ID, name, importance).apply {
-                description = descriptionText
-            }
-            notificationManager.createNotificationChannel(channel)
+
+        notificationController = NotificationController(this).apply {
+            build(2)
         }
-        val track = TrackRepository.tracksList[currentTrackId?:0]
-        Log.println(Log.DEBUG,"mytag","am here!")
-        val builder: NotificationCompat.Builder =
-            NotificationCompat.Builder(this,CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle(track.title)
-                .setContentText(track.author)
-
-        val notification:Notification = builder.build()
-
-        Log.println(Log.DEBUG,"mytag",notification.toString())
-        notificationManager.notify(notificationId,notification)
-
 
     }
-
-
 
     // track control
 
@@ -118,6 +104,7 @@ class MusicService() : Service() {
         }
     }
 
+
     fun pauseTrack() {
         mPlayer.pause()
     }
@@ -135,6 +122,7 @@ class MusicService() : Service() {
                 stop()
             }
         }
+        notificationController.build(id)
     }
 
 
