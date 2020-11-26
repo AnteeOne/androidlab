@@ -7,4 +7,59 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="TrackListItemCover">
+        <item name="android:layout_width">52dp</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:layout_marginStart">@dimen/normalStartMargin</item>
+        <item name="android:layout_marginTop">@dimen/normalTopMargin</item>
+    </style>
+
+    <style name="TrackListItemTitle">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/normalStartMargin</item>
+        <item name="android:textSize">@dimen/normalText</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="android:fontFamily">@font/iceberg</item>
+    </style>
+
+    <style name="TrackListItemAuthor">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/normalStartMargin</item>
+        <item name="android:layout_marginTop">@dimen/smallTopMargin</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/colorSecondaryText</item>
+        <item name="android:textSize">@dimen/smallText</item>
+    </style>
+
+    <style name="DefaultFragment">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:background">@drawable/background</item>
+    </style>
+
+    <style name="TrackDetailCover">
+        <item name="android:layout_width">@dimen/track_detail_cover_width</item>
+        <item name="android:layout_height">@dimen/track_detail_cover_height</item>
+        <item name="android:layout_marginTop">@dimen/track_detail_margin_top</item>
+    </style>
+
+    <style name="TrackDetailSecondaryText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">@dimen/track_detail_normal_start_margin</item>
+        <item name="android:textColor">@color/colorSecondaryText</item>
+        <item name="android:textSize">@dimen/track_detail_secondary_text</item>
+    </style>
+
+    <style name="TrackDetailPrimaryText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/track_detail_cover_top_margin</item>
+        <item name="android:layout_marginStart">@dimen/track_detail_normal_start_margin</item>
+        <item name="android:textColor">@color/colorPrimaryText</item>
+        <item name="android:textSize">@dimen/track_detail_primary_text</item>
+    </style>
+
 </resources>
