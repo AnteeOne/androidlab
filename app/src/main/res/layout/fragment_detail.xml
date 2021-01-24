@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.fragments.DetailFragment"
+    android:background="#00000000">
+
+    <EditText
+        android:id="@+id/editTodoTitle"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="16dp"
+        android:autofillHints="@string/default_todo_title"
+        android:background="@drawable/rounded_edittext"
+        android:fontFamily="sans-serif"
+        android:hint="@string/default_todo_title"
+        android:padding="8dp"
+        android:textColor="@color/colorText"
+        android:textColorHint="@color/colorFabRipple"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.3" />
+
+    <EditText
+        android:id="@+id/editTodoDescription"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:layout_margin="16dp"
+        android:layout_marginTop="16dp"
+        android:autofillHints="@string/default_todo"
+        android:background="@drawable/rounded_edittext"
+        android:fontFamily="sans-serif"
+        android:hint="@string/default_todo"
+        android:padding="8dp"
+        android:textColor="@color/colorText"
+        android:textColorHint="@color/colorFabRipple"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/editTodoTitle"
+        app:layout_constraintTop_toBottomOf="@+id/editTodoTitle" />
+
+    <Button
+        android:id="@+id/buttonTodoCommit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="57dp"
+        android:background="@drawable/rounded_edittext"
+        android:fontFamily="sans-serif"
+        android:text="@string/commit"
+        android:textColor="@color/colorText"
+        app:layout_constraintEnd_toEndOf="@+id/editTodoDescription"
+        app:layout_constraintStart_toStartOf="@+id/editTodoDescription"
+        app:layout_constraintTop_toBottomOf="@id/editTodoDescription" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

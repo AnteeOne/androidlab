@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">AnteeOneApp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="default_todo">default todo</string>
+    <string name="default_todo_title">default todo title</string>
+    <string name="commit">Commit</string>
 </resources>
