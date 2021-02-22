@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">AnteeOneApp</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="search_hint">Search Here</string>
+    <string name="weather_celsius">%1$s°С</string>
+    <string name="weather_celsius_min">Min Temp: %1$s°С</string>
+    <string name="weather_celsius_max">Max Temp: %1$s°С</string>
+    <string name="time">%1$s</string>
+    <string name="weather_speed">%1$s m/s</string>
+
 </resources>
