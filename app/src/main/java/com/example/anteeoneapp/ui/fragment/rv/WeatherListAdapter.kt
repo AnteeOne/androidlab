@@ -9,10 +9,10 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.anteeoneapp.R
-import com.example.anteeoneapp.data.WeatherListModel
+import com.example.anteeoneapp.data.jsonmodel.WeatherListModel
 
 class WeatherListAdapter(private var weatherListModel: WeatherListModel,
-    private val onClick:(String) -> (Unit)) :
+                         private val onClick:(String) -> (Unit)) :
     RecyclerView.Adapter<WeatherListAdapter.WeatherListVH>() {
 
     class WeatherListVH(itemView: View,private val onClick: (String) -> Unit) :RecyclerView.ViewHolder(itemView){
@@ -23,15 +23,16 @@ class WeatherListAdapter(private var weatherListModel: WeatherListModel,
         private val weatherAir: ImageView = itemView.findViewById(R.id.rv_item_weather_card_air)
         private val weatherUmbrella: ImageView = itemView.findViewById(R.id.rv_item_weather_card_umbrella)
 
-        fun bind(weatherDetail:WeatherListModel.WeatherDetail){
+        fun bind(weatherDetail: WeatherListModel.WeatherDetail){
             weatherTown.text = weatherDetail.name
             val temperature = weatherDetail.main.temp.toInt()
             weatherTemperature.text = itemView.resources
                 .getString(R.string.weather_celsius,temperature.toString())
             colorizeThermometer(temperature,weatherThermometer,itemView)
             colorizeAir(weatherDetail.wind.speed.toInt(),weatherAir,itemView)
-            colorizeUmbrella(weatherDetail.rain,weatherDetail.snow,weatherUmbrella,itemView)
+            colorizeUmbrella(weatherDetail.rain,weatherUmbrella,itemView)
             itemView.setOnClickListener {
+
                 onClick(weatherDetail.name)
             }
 
@@ -66,8 +67,8 @@ class WeatherListAdapter(private var weatherListModel: WeatherListModel,
 
         }
 
-        private fun colorizeUmbrella(rain:Any?,snow:Any?,weatherUmbrella:ImageView,itemView: View){
-            if (rain != null || snow != null)
+        private fun colorizeUmbrella(rain:Any?,weatherUmbrella:ImageView,itemView: View){
+//            if (rain != null )
                 weatherUmbrella.setColorFilter(ContextCompat.getColor(itemView.context,R.color.colorAccent),
                     PorterDuff.Mode.MULTIPLY)
         }

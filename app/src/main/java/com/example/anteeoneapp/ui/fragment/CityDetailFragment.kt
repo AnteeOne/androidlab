@@ -6,9 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
+import com.example.anteeoneapp.App
 import com.example.anteeoneapp.R
-import com.example.anteeoneapp.data.WeatherDetailModel
-import com.example.anteeoneapp.network.ApiFactory
+import com.example.anteeoneapp.data.converters.weatherDetailConverter
+import com.example.anteeoneapp.data.jsonmodel.WeatherDetailModel
+import com.example.anteeoneapp.domain.network.ApiFactory
 import kotlinx.coroutines.launch
 import kotlinx.android.synthetic.main.fragment_city_detail.*;
 import java.text.SimpleDateFormat
@@ -19,6 +21,7 @@ class CityDetailFragment : Fragment() {
 
     private var city: String? = null
     private val api = ApiFactory.weatherApi
+    private val appInstance = App.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,14 +37,19 @@ class CityDetailFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_city_detail, container, false)
     }
 
     private fun initWeather(cityTitle: String) {
         lifecycleScope.launch {
-            initWeatherView(api.getWeather(cityTitle))
-
+            try{
+                val weatherDetailModel = api.getWeather(cityTitle)
+                App.getInstance().weatherDetailDao.add(weatherDetailConverter.convertToDto(weatherDetailModel))
+                initWeatherView(weatherDetailModel)
+            }
+            catch (e:Exception){
+                initWeatherView(weatherDetailConverter.convertToModel(App.getInstance().weatherDetailDao.getByName(cityTitle)))
+            }
         }
     }
 

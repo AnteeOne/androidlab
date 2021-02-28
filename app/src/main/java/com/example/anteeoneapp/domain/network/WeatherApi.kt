@@ -1,7 +1,7 @@
-package com.example.anteeoneapp.network
+package com.example.anteeoneapp.domain.network
 
-import com.example.anteeoneapp.data.WeatherDetailModel
-import com.example.anteeoneapp.data.WeatherListModel
+import com.example.anteeoneapp.data.jsonmodel.WeatherDetailModel
+import com.example.anteeoneapp.data.jsonmodel.WeatherListModel
 import retrofit2.http.GET
 import retrofit2.http.Query
 
@@ -12,7 +12,7 @@ interface WeatherApi {
         @Query("lat") latitude:Double,
         @Query("lon") longitude:Double,
         @Query("cnt") count:Int
-    ):WeatherListModel
+    ): WeatherListModel
 
     @GET("weather?units=metric")
     suspend fun getWeather(
