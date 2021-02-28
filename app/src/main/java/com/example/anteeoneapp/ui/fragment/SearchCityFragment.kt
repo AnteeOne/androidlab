@@ -14,18 +14,18 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.anteeoneapp.App
 import com.example.anteeoneapp.R
-import com.example.anteeoneapp.data.WeatherListModel
-import com.example.anteeoneapp.network.ApiFactory
+import com.example.anteeoneapp.data.converters.weatherListConverter
+import com.example.anteeoneapp.domain.network.ApiFactory
 import com.example.anteeoneapp.ui.fragment.rv.WeatherListAdapter
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import java.lang.Exception
 
-// SearchView.OnQueryTextListener
-class SearchCityFragment : Fragment()  {
+
+class SearchCityFragment : Fragment() {
 
     private val api = ApiFactory.weatherApi
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -36,6 +36,7 @@ class SearchCityFragment : Fragment()  {
     private final val STANDART_LATITUDE = 54.550546
     private final val STANDART_LONGITUDE = 53.602365
 
+    private val appInstance = App.getInstance()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,7 +44,6 @@ class SearchCityFragment : Fragment()  {
         context?.also {
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(it)
         }
-
 
     }
 
@@ -62,15 +62,15 @@ class SearchCityFragment : Fragment()  {
 
     }
 
-    private fun initMembers(){
+    private fun initMembers() {
         mRecyclerView = view?.findViewById(R.id.rv_weather_list)
         mSearchView = view?.findViewById(R.id.searchView)
 
     }
 
     private fun getLastKnownLocation() {
-        Coordinates(0.0,0.0)
-        Log.println(Log.DEBUG,"weather-tag","starting getting location...")
+        Coordinates(0.0, 0.0)
+        Log.println(Log.DEBUG, "weather-tag", "starting getting location...")
         if (context?.let {
                 ActivityCompat.checkSelfPermission(
                     it,
@@ -82,61 +82,98 @@ class SearchCityFragment : Fragment()  {
                     Manifest.permission.ACCESS_COARSE_LOCATION
                 )
             } != PackageManager.PERMISSION_GRANTED
-        ){
-            initRecycler(Coordinates(STANDART_LATITUDE,STANDART_LONGITUDE))
+        ) {
+            initRecycler(Coordinates(STANDART_LATITUDE, STANDART_LONGITUDE))
         }
 
         fusedLocationClient.lastLocation
-            .addOnSuccessListener {location->
+            .addOnSuccessListener { location ->
                 if (location != null) {
-                    Log.println(Log.DEBUG,"weather-tag","location is works")
-                    initRecycler(Coordinates(location.latitude,location.longitude))
-                }
-                else{
-                    Toast.makeText(this.context,"Location is unavailable",Toast.LENGTH_SHORT).show()
-                    initRecycler(Coordinates(STANDART_LATITUDE,STANDART_LONGITUDE))
+                    Log.println(Log.DEBUG, "weather-tag", "location is works")
+                    initRecycler(Coordinates(location.latitude, location.longitude))
+                } else {
+                    Toast.makeText(this.context, "Location is unavailable", Toast.LENGTH_SHORT)
+                        .show()
+                    initRecycler(Coordinates(STANDART_LATITUDE, STANDART_LONGITUDE))
                 }
 
             }
     }
 
-    private fun initRecycler(coordinates:Coordinates){
-        mRecyclerView?.run{
+    private fun initRecycler(coordinates: Coordinates) {
+        mRecyclerView?.run {
             lifecycleScope.launch {
-
-                adapter = WeatherListAdapter(
-                    api.getWeatherList(coordinates.latitude,coordinates.longitude,50)
-                ) { cityTitle ->
-                    fragmentManager?.beginTransaction()?.replace(R.id.ma_fragment_container,
-                        CityDetailFragment.newInstance(cityTitle))
-                        ?.addToBackStack("list")
-                        ?.commit()
+                try {
+                    val weatherListModel =
+                        api.getWeatherList(coordinates.latitude, coordinates.longitude, 50)
+                    App.getInstance().weatherListDao.apply {
+                        deleteAll()
+                        insert(weatherListConverter.convertToDtoList(weatherListModel))
+                    }
+                    adapter = WeatherListAdapter(
+                        weatherListModel
+                    ) {}
+                } catch (e: Exception) {
+                    try {
+                        adapter = WeatherListAdapter(
+                            weatherListConverter.convertToWeatherListModel(App.getInstance().weatherListDao.getAll())
+                        ) {
+                            Toast.makeText(
+                                context,
+                                "Internet connection isn't available!",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    } catch (ex: Exception) {
+                        Toast.makeText(
+                            context,
+                            "Couldn't to connect to local database.Try later!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                    Toast.makeText(
+                        context,
+                        "Couldn't to connect to internet.Try later!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
+
             }
-            layoutManager = GridLayoutManager(this@SearchCityFragment.context,2)
+            layoutManager = GridLayoutManager(this@SearchCityFragment.context, 2)
 
         }
     }
 
-    private fun initSearch(){
-        mSearchView?.setOnQueryTextListener(object :SearchView.OnQueryTextListener{
+    private fun initSearch() {
+        mSearchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                Log.println(Log.DEBUG,"search-tag","Pressed on search button")
                 lifecycleScope.launch {
                     try {
                         val queryWeather = api.getWeather(query)
-                        Log.println(Log.DEBUG,"search-tag","Sending request")
-                        Log.println(Log.DEBUG,"search-tag","Good response")
 
-                        fragmentManager?.beginTransaction()?.
-                        replace(R.id.ma_fragment_container,
-                            CityDetailFragment.newInstance(query))
+                        fragmentManager?.beginTransaction()?.replace(
+                            R.id.ma_fragment_container,
+                            CityDetailFragment.newInstance(query)
+                        )
                             ?.addToBackStack("list")
                             ?.commit()
 
-                    }
-                    catch (ex:Exception){
-                        Toast.makeText(context,"Couldn't to find the city.Try again!",Toast.LENGTH_SHORT).show()
+                    } catch (ex: Exception) {
+                        if (appInstance.weatherDetailDao.isExist(query)){
+                            fragmentManager?.beginTransaction()?.replace(
+                                R.id.ma_fragment_container,
+                                CityDetailFragment.newInstance(query)
+                            )
+                                ?.addToBackStack("list")
+                                ?.commit()
+                        }
+                        else{
+                            Toast.makeText(
+                                context,
+                                "Couldn't to find the city in database and internet :c",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
 
                 }
@@ -144,7 +181,7 @@ class SearchCityFragment : Fragment()  {
             }
 
             override fun onQueryTextChange(query: String): Boolean {
-                Log.println(Log.DEBUG,"search-tag","Query was changed")
+                Log.println(Log.DEBUG, "search-tag", "Query was changed")
                 return false
             }
 
@@ -170,5 +207,7 @@ class SearchCityFragment : Fragment()  {
             }
     }
 
-    data class Coordinates(val latitude:Double,val longitude:Double)
+    data class Coordinates(val latitude: Double, val longitude: Double)
+
+
 }

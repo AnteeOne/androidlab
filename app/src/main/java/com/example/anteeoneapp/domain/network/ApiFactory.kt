@@ -1,4 +1,4 @@
-package com.example.anteeoneapp.network
+package com.example.anteeoneapp.domain.network
 
 import com.example.anteeoneapp.BuildConfig
 import okhttp3.Interceptor
