@@ -11,6 +11,7 @@ import com.example.anteeoneapp.R
 import com.example.anteeoneapp.data.converters.weatherDetailConverter
 import com.example.anteeoneapp.data.jsonmodel.WeatherDetailModel
 import com.example.anteeoneapp.domain.network.ApiFactory
+import com.example.anteeoneapp.domain.repository.ApiRepositoryImpl
 import kotlinx.coroutines.launch
 import kotlinx.android.synthetic.main.fragment_city_detail.*;
 import java.text.SimpleDateFormat
@@ -20,8 +21,6 @@ private const val ARG_PARAM1 = "CITY_TITLE"
 class CityDetailFragment : Fragment() {
 
     private var city: String? = null
-    private val api = ApiFactory.weatherApi
-    private val appInstance = App.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +42,7 @@ class CityDetailFragment : Fragment() {
     private fun initWeather(cityTitle: String) {
         lifecycleScope.launch {
             try{
-                val weatherDetailModel = api.getWeather(cityTitle)
+                val weatherDetailModel = ApiRepositoryImpl.getWeather(cityTitle)
                 App.getInstance().weatherDetailDao.add(weatherDetailConverter.convertToDto(weatherDetailModel))
                 initWeatherView(weatherDetailModel)
             }
@@ -53,7 +52,7 @@ class CityDetailFragment : Fragment() {
         }
     }
 
-    private suspend fun initWeatherView(cityWeather: WeatherDetailModel) {
+    private fun initWeatherView(cityWeather: WeatherDetailModel) {
         address.text = cityWeather.name
         temp.text = context?.resources?.getString(
             R.string.weather_celsius,

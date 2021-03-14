@@ -41,6 +41,7 @@ android {
 
 def retrofit = "2.9.0"
 def room_version = "2.2.6"
+def moxyVersion = "2.2.1"
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
@@ -75,7 +76,8 @@ dependencies {
     implementation "androidx.room:room-ktx:$room_version"
     //endregion
 
-
+    implementation "com.github.moxy-community:moxy:$moxyVersion"
+    kapt "com.github.moxy-community:moxy-compiler:$moxyVersion"
 
     implementation 'com.google.android.gms:play-services-location:17.0.0'
 }
