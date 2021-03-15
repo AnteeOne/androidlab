@@ -1,36 +1,31 @@
 package com.example.anteeoneapp.ui.fragment
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.lifecycleScope
-import com.example.anteeoneapp.App
+import androidx.fragment.app.Fragment
 import com.example.anteeoneapp.R
-import com.example.anteeoneapp.data.converters.weatherDetailConverter
 import com.example.anteeoneapp.data.jsonmodel.WeatherDetailModel
-import com.example.anteeoneapp.domain.network.ApiFactory
-import com.example.anteeoneapp.domain.repository.ApiRepositoryImpl
-import kotlinx.coroutines.launch
-import kotlinx.android.synthetic.main.fragment_city_detail.*;
+import com.example.anteeoneapp.ui.interfaces.DetailCityView
+import com.example.anteeoneapp.ui.presenters.DetailCityPresenter
+import kotlinx.android.synthetic.main.fragment_city_detail.*
+import moxy.MvpAppCompatFragment
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 import java.text.SimpleDateFormat
 
 private const val ARG_PARAM1 = "CITY_TITLE"
+private const val DEF_PARAM1 = "JOJO"
 
-class CityDetailFragment : Fragment() {
+class CityDetailFragment : MvpAppCompatFragment(),DetailCityView {
 
-    private var city: String? = null
+    @InjectPresenter
+    lateinit var presenter: DetailCityPresenter
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            city = it.getString(ARG_PARAM1)
-        }
-        city?.let {
-            initWeather(it)
-        }
-    }
+    @ProvidePresenter
+    fun providePresenter(): DetailCityPresenter = initPresenter()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,20 +34,18 @@ class CityDetailFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_city_detail, container, false)
     }
 
-    private fun initWeather(cityTitle: String) {
-        lifecycleScope.launch {
-            try{
-                val weatherDetailModel = ApiRepositoryImpl.getWeather(cityTitle)
-                App.getInstance().weatherDetailDao.add(weatherDetailConverter.convertToDto(weatherDetailModel))
-                initWeatherView(weatherDetailModel)
+    companion object {
+
+        @JvmStatic
+        fun newInstance(param1: String) =
+            CityDetailFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_PARAM1, param1)
+                }
             }
-            catch (e:Exception){
-                initWeatherView(weatherDetailConverter.convertToModel(App.getInstance().weatherDetailDao.getByName(cityTitle)))
-            }
-        }
     }
 
-    private fun initWeatherView(cityWeather: WeatherDetailModel) {
+    override fun showWeather(cityWeather: WeatherDetailModel) {
         address.text = cityWeather.name
         temp.text = context?.resources?.getString(
             R.string.weather_celsius,
@@ -72,37 +65,18 @@ class CityDetailFragment : Fragment() {
         pressure.text = cityWeather.main.pressure.toString()
         humidity.text = cityWeather.main.humidity.toString() + "%"
         direction.text = when (cityWeather.wind.deg) {
-                in 0..22 -> "N"
-                in 23..67 -> "N-E"
-                in 68..112 -> "E"
-                in 113..157 -> "S-E"
-                in 158..202 -> "S"
-                in 203..247 -> "S-W"
-                in 248..292 -> "S"
-                in 293..337 -> "N-W"
-                in 337..361 -> "N"
-                else -> ":D"
-            }
-
-
+            in 0..22 -> "N"
+            in 23..67 -> "N-E"
+            in 68..112 -> "E"
+            in 113..157 -> "S-E"
+            in 158..202 -> "S"
+            in 203..247 -> "S-W"
+            in 248..292 -> "S"
+            in 293..337 -> "N-W"
+            in 337..361 -> "N"
+            else -> ":D"
+        }
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment CityDetailFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String) =
-            CityDetailFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                }
-            }
-    }
+    private fun initPresenter() = DetailCityPresenter(arguments?.getString(ARG_PARAM1)?: DEF_PARAM1)
 }

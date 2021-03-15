@@ -1,4 +1,4 @@
-package com.example.anteeoneapp.domain.repository
+package com.example.anteeoneapp.domain.repository.interfaces
 
 import android.content.Context
 import com.example.anteeoneapp.data.Coordinates

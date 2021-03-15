@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.example.anteeoneapp.domain.database.AppDatabase
 import com.example.anteeoneapp.domain.database.dao.WeatherDetailDao
 import com.example.anteeoneapp.domain.database.dao.WeatherListDao
+import moxy.MvpFacade
 
 class App : Application() {
 
@@ -29,6 +30,7 @@ class App : Application() {
             .build()
         weatherListDao = database.weatherListDao()
         weatherDetailDao = database.weatherDetailDao()
+        MvpFacade.init()
 
     }
 }

@@ -1,52 +1,39 @@
 package com.example.anteeoneapp.ui.fragment
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.anteeoneapp.App
 import com.example.anteeoneapp.R
-import com.example.anteeoneapp.data.Coordinates
-import com.example.anteeoneapp.data.converters.weatherListConverter
-import com.example.anteeoneapp.domain.repository.ApiRepositoryImpl
-import com.example.anteeoneapp.domain.repository.LocationRepositoryImpl
 import com.example.anteeoneapp.ui.fragment.rv.WeatherListAdapter
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import kotlinx.coroutines.launch
-import java.lang.Exception
-import java.lang.NullPointerException
+import com.example.anteeoneapp.ui.interfaces.SearchCityView
+import com.example.anteeoneapp.ui.presenters.SearchCityPresenter
+import moxy.MvpAppCompatFragment
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 
 
-class SearchCityFragment : Fragment() {
-
-
+class SearchCityFragment : MvpAppCompatFragment(),SearchCityView {
 
     private var mRecyclerView: RecyclerView? = null
     private var mSearchView: SearchView? = null
+    private var mProgressBar: ProgressBar? = null
 
+    @InjectPresenter
+    lateinit var presenter: SearchCityPresenter
 
-
-    private val appInstance = App.getInstance()
-
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        context?.also {
-            LocationRepositoryImpl.initFusedClient(it)
-        }
-
-    }
+    @ProvidePresenter
+    fun providePresenter(): SearchCityPresenter? = context?.let { initPresenter(it) }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,21 +42,13 @@ class SearchCityFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_search_city, container, false)
     }
 
-    override fun onStart() {
-        super.onStart()
-        initMembers()
-        setLastKnownLocation()
-        initSearch()
-
-    }
-
-    private fun initMembers() {
+    override fun initMembers() {
         mRecyclerView = view?.findViewById(R.id.rv_weather_list)
         mSearchView = view?.findViewById(R.id.searchView)
-
+        mProgressBar = view?.findViewById(R.id.progressBar)
     }
 
-    private fun setLastKnownLocation() {
+    override fun initLastKnownLocation() {
         Log.println(Log.DEBUG, "weather-tag", "starting getting location...")
         if (context?.let {
                 ActivityCompat.checkSelfPermission(
@@ -83,100 +62,40 @@ class SearchCityFragment : Fragment() {
                 )
             } != PackageManager.PERMISSION_GRANTED
         ) {
-            initRecycler(LocationRepositoryImpl.getDefaultLocation())
+            presenter.setDefaultLocation()
         }
+        context?.let { presenter.setLastKnownLocation(it) }
 
-        context?.also {
-            lifecycleScope.launch {
-                try {
-                    initRecycler(LocationRepositoryImpl.getLocation(it))
-                }
-                catch (ex:NullPointerException){
-                    initRecycler(LocationRepositoryImpl.getDefaultLocation())
-                }
-
-            }
-
-        }
     }
 
-    private fun initRecycler(coordinates: Coordinates) {
+    companion object {
+        @JvmStatic
+        fun newInstance(param1: String, param2: String) =
+            SearchCityFragment().apply {
+                arguments = Bundle().apply {}
+            }
+    }
+
+    override fun showLoading() {
+        mProgressBar?.visibility = View.VISIBLE
+    }
+
+    override fun hideLoading() {
+        mProgressBar?.visibility = View.GONE
+    }
+
+    override fun initWeatherList(wListAdapter: WeatherListAdapter) {
         mRecyclerView?.run {
-            lifecycleScope.launch {
-                try {
-                    val weatherListModel =
-                    ApiRepositoryImpl.getWeatherList(coordinates)
-                    App.getInstance().weatherListDao.apply {
-                        deleteAll()
-                        insert(weatherListConverter.convertToDtoList(weatherListModel))
-                    }
-                    adapter = WeatherListAdapter(
-                        weatherListModel
-                    ) {}
-                } catch (e: Exception) {
-                    try {
-                        adapter = WeatherListAdapter(
-                            weatherListConverter.convertToWeatherListModel(App.getInstance().weatherListDao.getAll())
-                        ) {
-                            Toast.makeText(
-                                context,
-                                "Internet connection isn't available!",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    } catch (ex: Exception) {
-                        Toast.makeText(
-                            context,
-                            "Couldn't to connect to local database.Try later!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    Toast.makeText(
-                        context,
-                        "Couldn't to connect to internet.Try later!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-            }
+            adapter =  wListAdapter
             layoutManager = GridLayoutManager(this@SearchCityFragment.context, 2)
-
         }
     }
 
-    private fun initSearch() {
+    override fun initSearch() {
         mSearchView?.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String): Boolean {
-                lifecycleScope.launch {
-                    try {
-                        val queryWeather = ApiRepositoryImpl.getWeather(query)
-
-                        fragmentManager?.beginTransaction()?.replace(
-                            R.id.ma_fragment_container,
-                            CityDetailFragment.newInstance(query)
-                        )
-                            ?.addToBackStack("list")
-                            ?.commit()
-
-                    } catch (ex: Exception) {
-                        if (appInstance.weatherDetailDao.isExist(query)){
-                            fragmentManager?.beginTransaction()?.replace(
-                                R.id.ma_fragment_container,
-                                CityDetailFragment.newInstance(query)
-                            )
-                                ?.addToBackStack("list")
-                                ?.commit()
-                        }
-                        else{
-                            Toast.makeText(
-                                context,
-                                "Couldn't to find the city in database and internet :c",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    }
-
-                }
+                Log.println(Log.INFO,"anttag","on query = $query")
+                presenter.onQueryTextSubmit(query)
                 return false
             }
 
@@ -187,15 +106,20 @@ class SearchCityFragment : Fragment() {
         })
     }
 
-    companion object {
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SearchCityFragment().apply {
-                arguments = Bundle().apply {
-
-                }
-            }
+    override fun replaceOnDetail(query: String) {
+        fragmentManager?.beginTransaction()?.replace(
+            R.id.ma_fragment_container,
+            CityDetailFragment.newInstance(query)
+        )
+            ?.addToBackStack("list")
+            ?.commit()
     }
+
+    override fun showToast(text: String, duration: Int) {
+        Toast.makeText(context,text,duration)
+    }
+
+    private fun initPresenter(context: Context) = SearchCityPresenter(context)
 
 
 }

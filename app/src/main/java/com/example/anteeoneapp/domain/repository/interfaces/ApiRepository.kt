@@ -1,4 +1,4 @@
-package com.example.anteeoneapp.domain.repository
+package com.example.anteeoneapp.domain.repository.interfaces
 
 import com.example.anteeoneapp.data.Coordinates
 import com.example.anteeoneapp.data.jsonmodel.WeatherDetailModel

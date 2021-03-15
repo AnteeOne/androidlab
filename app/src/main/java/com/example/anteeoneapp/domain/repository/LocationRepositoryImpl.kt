@@ -5,18 +5,20 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.example.anteeoneapp.data.Coordinates
+import com.example.anteeoneapp.domain.repository.interfaces.LocationRepository
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.lang.NullPointerException
 import kotlin.coroutines.resumeWithException
 
-object LocationRepositoryImpl:LocationRepository {
+object LocationRepositoryImpl:
+    LocationRepository {
 
     lateinit var fusedLocationClient: FusedLocationProviderClient
 
-    private final val STANDART_LATITUDE = 54.550546
-    private final val STANDART_LONGITUDE = 53.602365
+    private val STANDART_LATITUDE = 54.550546
+    private val STANDART_LONGITUDE = 53.602365
 
     @SuppressLint("MissingPermission")
     override suspend fun getLocation(context: Context): Coordinates = suspendCancellableCoroutine { cont ->

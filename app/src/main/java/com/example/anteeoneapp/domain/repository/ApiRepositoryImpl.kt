@@ -4,8 +4,10 @@ import com.example.anteeoneapp.data.Coordinates
 import com.example.anteeoneapp.data.jsonmodel.WeatherDetailModel
 import com.example.anteeoneapp.data.jsonmodel.WeatherListModel
 import com.example.anteeoneapp.domain.network.ApiFactory
+import com.example.anteeoneapp.domain.repository.interfaces.ApiRepository
 
-object ApiRepositoryImpl: ApiRepository {
+object ApiRepositoryImpl:
+    ApiRepository {
 
     private val api = ApiFactory.weatherApi
 
